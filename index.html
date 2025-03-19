@@ -52,6 +52,7 @@
 <body>
 
 <h2>LABOUR LICENCE REMINDERS</h2>
+<button class="whatsapp-btn" onclick="sendBulkWhatsApp()">Send WhatsApp to All</button>
 <p id="refreshMessage">Data refreshed successfully.</p>
 <p id="loading">Fetching data, please wait...</p>
 
@@ -75,7 +76,6 @@
 <script>
 const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbwJR8PxrUknUJwhuV-YzzyCacB4Dgnu4ZiIYnzfMZgzkeauaxi1cNGZ57VCMTXu-XpF/exec';
 
-// Fixed Assignee Phone Numbers
 const assigneePhones = {
     "ABHIGNA": "9182338327",
     "RAJU": "9248410298",
@@ -108,23 +108,17 @@ async function fetchData() {
             const remark = person.remark || '';
             const assign = person.assign || person.busname || '';
             const status = person.status || '';
-
-            // Clean client phone number
             phone = phone.replace(/\D/g, '');
 
-            // Get the fixed assignee phone number
-            let assignPhone = assigneePhones[assign] || ''; // Get phone from mapping
-           
-            // Generate WhatsApp link for the client
+            let assignPhone = assigneePhones[assign] || '';
             let whatsappClientLink = '#';
             let clientDisabledAttr = 'disabled';
             if (phone.length >= 10) {
-                const message = encodeURIComponent(`Hi ${name}, Reminder regarding Labour Licence yearly renewal and 31-Dec is last date for renewal, other wise penalty will be levied`);
+                const message = encodeURIComponent(`Hi ${name}, Reminder regarding Labour Licence yearly renewal and 31-Dec is last date for renewal, otherwise penalty will be levied.`);
                 whatsappClientLink = `https://wa.me/${phone}?text=${message}`;
                 clientDisabledAttr = '';
             }
 
-            // Generate WhatsApp link for the assignee
             let whatsappAssigneeLink = '#';
             let assigneeDisabledAttr = 'disabled';
             if (assignPhone.length >= 10) {
@@ -168,7 +162,20 @@ async function fetchData() {
     }
 }
 
-// Fetch data initially and refresh every 60 seconds
+function sendBulkWhatsApp() {
+    const rows = document.querySelectorAll("#dataTable tbody tr");
+    let phoneNumbers = [];
+    rows.forEach(row => {
+        const phone = row.cells[2].innerText.replace(/\D/g, '');
+        if (phone.length >= 10) {
+            phoneNumbers.push(`https://wa.me/${phone}?text=${encodeURIComponent('Reminder: Labour Licence renewal due on 31-Dec to avoid penalties.')}`);
+        }
+    });
+    phoneNumbers.forEach((link, index) => {
+        setTimeout(() => { window.open(link, '_blank'); }, index * 2000);
+    });
+}
+
 fetchData();
 setInterval(fetchData, 60000);
 </script>
